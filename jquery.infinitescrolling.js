@@ -14,7 +14,7 @@
   };
   var $tmpLoader,
       $this,
-      bound = false;
+      bound = triggered = false;
 
   /**
    * Public methods
@@ -23,7 +23,7 @@
     init: function(options)
     {
       if (!this.is("ul") && !this.is("ol")) {
-        $.error('jQuery.infinitescrolling :: this plugin can only be applied on a list (<ul>, <ol>)');
+        // $.error('jQuery.infinitescrolling :: this plugin can only be applied on a list (<ul>, <ol>)');
         return this;
       }
 
@@ -31,21 +31,25 @@
       $this = this;
 
       if (settings.nextSelector === null) {
-        $.error('jQuery.infinitescrolling :: Option "nextSelector" must be defined');
+        // $.error('jQuery.infinitescrolling :: Option "nextSelector" must be defined');
+        return this;
       }
       if (settings.nextSelector === null) {
-        $.error('jQuery.infinitescrolling :: Option "itemSelector" must be defined');
+        // $.error('jQuery.infinitescrolling :: Option "itemSelector" must be defined');
+        return this;
       }
       if (settings.loaderSelector === null) {
-        $.error('jQuery.infinitescrolling :: Option "loaderSelector" must be defined');
+        // $.error('jQuery.infinitescrolling :: Option "loaderSelector" must be defined');
+        return this;
       }
       if (settings.navSelector === null) {
-        $.error('jQuery.infinitescrolling :: Option "navSelector" must be defined');
+        // $.error('jQuery.infinitescrolling :: Option "navSelector" must be defined');
+        return this;
       }
-
       $(settings.loaderSelector).hide();
       $(settings.navSelector).hide();
       _bind();
+      // _trigger();
     },
     pause: function()
     {
@@ -54,6 +58,20 @@
     resume: function()
     {
       _bind();
+    },
+    destroy: function()
+    {
+      _unbind();
+      settings = {
+        startAt:        5,
+        navSelector:    null,
+        nextSelector:   null,
+        itemSelector:   null,
+        loaderSelector: null,
+        binder:         window,
+        callback:       undefined
+      };
+      bound = false;
     }
   };
 
@@ -81,6 +99,12 @@
       bound = false;
     }
   }
+  function _trigger()
+  {
+    if (!triggered) {
+      $(settings.binder).trigger("smartscroll.infinitescrolling")
+    }
+  }
   function _onScroll($this)
   {
     belowViewport = 0;
@@ -93,6 +117,7 @@
     });
 
     if (belowViewport <= settings.startAt) {
+      triggered = true;
       _loadNextPage($this);
     }
   }
@@ -131,6 +156,7 @@
           settings.callback();
         }
         _bind();
+        triggered = false;
       }
     });
   }
